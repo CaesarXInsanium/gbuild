@@ -10,11 +10,14 @@ library/script that runs a project file. It is greatly inspired by the
 Meson build system. I just wanted something that I built myself. Not
 just a script.
 
-## `cbuild`{.verbatim}
+It fucking works and that is good enough. I am now officially bored of this project.
 
-Binary that will load the project file, and then run the relevant
-commands in order to create executables and libraries
 
-## Library
+## TODO
 
-Functions that are necessary to define targets and methods of getting there.
+- [ ] single source files
+  - must add `-c` by default
+- handle error from compiler and linker
+- [X] files with the main function must be handled differently
+  - fixed with removing linking stage from compile function
+- 

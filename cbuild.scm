@@ -1,3 +1,5 @@
+;; module definition must be on top
+(define-module (cbuild))
 (use-modules (ice-9 string-fun)
              (ice-9 curried-definitions)
              (srfi srfi-1))
@@ -30,9 +32,11 @@
                           (cflags NIL))
          (let* ((obj-target (object-target source objdir)))
           (concatenate (list (list compiler source "-o" obj-target)
-                             include
+                             (include-flags include)
                              cflags)))) 
 
+;; add check to see if there is one source file, and it compiles to a valid
+;; executable, 
 (define* (compile source
                   objdir
                   compiler
@@ -75,6 +79,7 @@
          (apply system* command))
                       
 
+;; add check to see if there is one source
 (define* (executable target-name 
                      sources 
                      #:key 
@@ -90,14 +95,6 @@
         CC
         #:ldflags ldflags))
         
-
-(define cflags (list "-Wall" "-Werror" "-std=gnu99"))
-;; empty list as no libraries need to be linked with
-(define ldflags '())
-
-(define sources (list "hello.c"))
-(define include-dirs '())
-
-(executable "hello"
-            sources
-            #:cflags cflags)
+(export NIL
+        executable)
+        
