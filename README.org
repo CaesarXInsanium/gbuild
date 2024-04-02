@@ -14,12 +14,12 @@ library/script that runs a project file. It is greatly inspired by the
 Meson build system. I just wanted something that I built myself. Not
 just a script.
 
-Next step is to get this to become a script.
 
 ** TODO
    :PROPERTIES:
    :CUSTOM_ID: todo
    :END:
+- [X] turn into script that can be run
 - [ ] single source files
   - [X] must add =-c= by default
 - handle error from compiler and linker
@@ -30,4 +30,7 @@ Next step is to get this to become a script.
 - [ ] check if OBJ directory exists before placing object files there
 - [ ] add support for noSTD
 - [ ] add support for dynamic libaries and static libraries
-- [ ] define targets as dependencies to link against(dynamic libraries)
+- [ ] define targets as dependencies to link against(libraries)
+- [ ] include paths
+- [ ] add default variables of CFLAGS, CC, other useful flags
+- [ ] add method for verifying that compiler is valid
