@@ -1,20 +1,33 @@
+#!/usr/bin/env -S guile -e main -s
+!#
 ;; module definition must be on top
-(define-module (cbuild))
-(use-modules (ice-9 string-fun)
-             (ice-9 curried-definitions)
-             (srfi srfi-1))
+(use-modules 
+ (ice-9 string-fun)
+ (ice-9 curried-definitions)
+ (srfi srfi-1)
+ (ice-9 ftw)
+ (ice-9 local-eval))
 
 ;; empty list
 (define NIL '())
 
+;; TODO ADD Default Variables
+; define method to change this value
 (define CC "/usr/bin/gcc")
 
+(define CSTD18 "-std=c18")
+(define CWALL "-Wall")
+(define CWERROR "-Werror")
+(define GGDB "-ggdb")
+
+;; should support relative paths and full paths
 (define (include-flags include-paths)
   (map (lambda (path) (string-append "-I" path))
        include-paths))
 
 (define (path-exists? path) (access? path R_OK))
 
+;; takes path to source file and returns new path to object file
 (define (object-target source-path objdir)
   (string-append objdir
                  "/"
@@ -23,7 +36,6 @@
 
 ;; returns output path
 ;; compile single file and place into obj directory
-
 (define* (compile-command source
                           objdir
                           compiler
@@ -49,12 +61,13 @@
                                           objdir
                                           compiler
                                           #:include include
-                                          #:cflags cflags))
+                                          #:cflags (append cflags '("-c"))))
          (display (format #f "Compiling ~a ~%" command))
          (apply system* command)
          (object-target source objdir))
          
                             
+;; generate command to run
 (define* (link-command target
                        objects
                        linker
@@ -66,6 +79,7 @@
                             ldflags)))
 
 ;; generates an executable for now
+;; TODO: returns the path to the executable
 (define* (link target
                objects
                linker
@@ -84,17 +98,34 @@
                      sources 
                      #:key 
                      (cflags NIL)
-                     (ldflags NIL))
+                     (ldflags NIL)
+                     (include-paths NIL))
   (link target-name
         (map (lambda (source)
                (compile source 
                         "obj" 
                         CC
-                        #:cflags cflags))
+                        #:cflags cflags
+                        #:include include-paths))
              sources)
         CC
         #:ldflags ldflags))
-        
-(export NIL
-        executable)
-        
+
+;; get current working directory
+;; find a file named build.scm
+;; load and evaluate it
+;; hopefully return some nice errors if it finds any
+;; TODO: check if obj directory exists and is writable
+
+(define (main args)
+  (define dir (getcwd))
+  (define cbuild "build.scm")
+  (define files 
+    (scandir dir 
+             (lambda (filename) 
+               (string=? cbuild filename))))
+  (if (null? files)
+    (error "cbuild.scm not preset")
+    (primitive-load (string-append dir "/" cbuild))))
+    
+

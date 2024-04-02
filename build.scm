@@ -1,7 +1,6 @@
-(use-modules (cbuild))
 ;; sample work
 
-(define cflags (list "-Wall" "-Werror" "-std=gnu99" "-c"))
+(define cflags (list "-Wall" "-Werror" "-std=gnu99"))
 ;; empty list as no libraries need to be linked with
 (define ldflags '())
 

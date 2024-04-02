@@ -1,5 +1,9 @@
-# Purpose
-
+#+TITLE: Guile Build System for C
+#:AUTHOR: Caesar X Insanium
+* Purpose
+  :PROPERTIES:
+  :CUSTOM_ID: purpose
+  :END:
 I wish to be able to create a system build system in the GNU Guile
 programming language. I already have a simple test script that I can
 build off of. I will work on this while I get some more motivation for
@@ -10,14 +14,20 @@ library/script that runs a project file. It is greatly inspired by the
 Meson build system. I just wanted something that I built myself. Not
 just a script.
 
-It fucking works and that is good enough. I am now officially bored of this project.
+Next step is to get this to become a script.
 
-
-## TODO
-
+** TODO
+   :PROPERTIES:
+   :CUSTOM_ID: todo
+   :END:
 - [ ] single source files
-  - must add `-c` by default
+  - [X] must add =-c= by default
 - handle error from compiler and linker
 - [X] files with the main function must be handled differently
   - fixed with removing linking stage from compile function
-- 
+- [X] convert markdown readme to org mode
+- [ ] check if there are multiple targets
+- [ ] check if OBJ directory exists before placing object files there
+- [ ] add support for noSTD
+- [ ] add support for dynamic libaries and static libraries
+- [ ] define targets as dependencies to link against(dynamic libraries)
