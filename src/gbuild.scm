@@ -1,12 +1,12 @@
-#!/usr/bin/env -S guile -e main -s
-!#
 ;; module definition must be on top
-(use-modules 
- (ice-9 string-fun)
- (ice-9 curried-definitions)
- (srfi srfi-1)
- (ice-9 ftw)
- (ice-9 local-eval))
+(define-module (gbuild)
+               #:use-module (ice-9 string-fun)
+               #:use-module (ice-9 curried-definitions)
+               #:use-module (srfi srfi-1)
+               #:use-module (ice-9 ftw)
+               #:use-module (ice-9 local-eval)
+               #:export (gbuild-main
+                          executable))
 
 ;; empty list
 (define NIL '())
@@ -14,20 +14,27 @@
 ;; TODO ADD Default Variables
 ; define method to change this value
 (define CC "/usr/bin/gcc")
+;; TODO add way to search for a compiler
 
+;; flags
 (define CSTD18 "-std=c18")
 (define CWALL "-Wall")
 (define CWERROR "-Werror")
 (define GGDB "-ggdb")
 
 ;; should support relative paths and full paths
+;; TODO: convert relative paths to aboslute paths
 (define (include-flags include-paths)
   (map (lambda (path) (string-append "-I" path))
        include-paths))
 
+;; TODO declare a fuzzy file finder
+
+;; 
 (define (path-exists? path) (access? path R_OK))
 
 ;; takes path to source file and returns new path to object file
+;; TODO check if source file is newer than object, file, compile if so
 (define (object-target source-path objdir)
   (string-append objdir
                  "/"
@@ -55,6 +62,7 @@
                   #:key
                   (include NIL)
                   (cflags NIL))
+         ;; TODO move this outside
          (if (not (access? objdir (logior R_OK F_OK W_OK)))
            (mkdir objdir))
          (define command (compile-command source
@@ -65,7 +73,6 @@
          (display (format #f "Compiling ~a ~%" command))
          (apply system* command)
          (object-target source objdir))
-         
                             
 ;; generate command to run
 (define* (link-command target
@@ -115,17 +122,15 @@
 ;; find a file named build.scm
 ;; load and evaluate it
 ;; hopefully return some nice errors if it finds any
-;; TODO: check if obj directory exists and is writable
+;; TODO figure out what to do if the compilation fails
+;; TODO check if obj directory exists and is writable
 
-(define (main args)
+(define (gbuild-main args)
   (define dir (getcwd))
   (define cbuild "build.scm")
   (define files 
-    (scandir dir 
-             (lambda (filename) 
-               (string=? cbuild filename))))
+    (scandir dir (lambda (filename) 
+                   (string=? cbuild filename))))
   (if (null? files)
-    (error "cbuild.scm not preset")
+    (error "build.scm not present")
     (primitive-load (string-append dir "/" cbuild))))
-    
-

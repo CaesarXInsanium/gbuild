@@ -1,0 +1,7 @@
+#!/usr/bin/env -S guile -e main -s
+!#
+
+;; relevant library should be somewhere in the GUILE_LOAD_PATH
+(use-modules (gbuild))
+
+(define (main args) (gbuild-main args))
