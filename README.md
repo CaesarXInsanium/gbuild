@@ -12,7 +12,7 @@ just a script.
 
 ## TODO
 
-- [ ] reorgnize the entire project to better fit GNU Guile project structure
+- [x] reorgnize the entire project to better fit GNU Guile project structure
 - [x] turn into script that can be run
 - [ ] single source files
   - [x] must add `-c` by default
@@ -34,3 +34,4 @@ just a script.
   - [ ] `cbuild debug`
   - [ ] `cbuild build`
   - [ ] `cbuild release`
+  - [ ] `cbuild custom`

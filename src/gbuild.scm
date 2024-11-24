@@ -5,6 +5,8 @@
                #:use-module (srfi srfi-1)
                #:use-module (ice-9 ftw)
                #:use-module (ice-9 local-eval)
+               #:use-module (gbuild files)
+               #:use-module (gbuild c cflags)
                #:export (gbuild-main
                           executable))
 
@@ -16,22 +18,13 @@
 (define CC "/usr/bin/gcc")
 ;; TODO add way to search for a compiler
 
-;; flags
-(define CSTD18 "-std=c18")
-(define CWALL "-Wall")
-(define CWERROR "-Werror")
-(define GGDB "-ggdb")
 
-;; should support relative paths and full paths
-;; TODO: convert relative paths to aboslute paths
 (define (include-flags include-paths)
-  (map (lambda (path) (string-append "-I" path))
+  (map (lambda (path) 
+         (string-append "-I" (canonicalize-path path)))
        include-paths))
 
 ;; TODO declare a fuzzy file finder
-
-;; 
-(define (path-exists? path) (access? path R_OK))
 
 ;; takes path to source file and returns new path to object file
 ;; TODO check if source file is newer than object, file, compile if so
@@ -40,6 +33,13 @@
                  "/"
                  (string-replace-substring source-path "/" "%")
                  ".o"))
+
+;; assumes that a and b are valid file paths
+;; stat-mtime returns an integer
+(define (is-newer? a b)
+  (let ((a-mod-time (stat:mtime (stat a)))
+        (b-mod-time (stat:mtime (stat b))))
+    (> a-mod-time b-mod-time)))
 
 ;; returns output path
 ;; compile single file and place into obj directory
@@ -54,6 +54,12 @@
                              (include-flags include)
                              cflags)))) 
 
+;; target is already defined, src/hello.c -> obj/hello.c.o
+(define* (compile-to-object source target compiler includes cflags)
+         (concatenate (list (list compiler source "-o" target)
+                            (include-flags includes)
+                            cflags)))
+         
 ;; add check to see if there is one source file, and it compiles to a valid
 ;; executable, 
 (define* (compile source
@@ -78,8 +84,7 @@
 (define* (link-command target
                        objects
                        linker
-                       #:key
-                       (ldflags NIL))
+                       ldflags)
          (concatenate (list (list linker) 
                             objects
                             (list "-o" target)
@@ -87,17 +92,16 @@
 
 ;; generates an executable for now
 ;; TODO: returns the path to the executable
-(define* (link target
-               objects
-               linker
-               #:key
-               (ldflags NIL))
+(define (link target
+              objects
+              linker
+              ldflags
          (define command (link-command target
                                       objects
                                       linker
-                                      #:ldflags ldflags))
+                                      ldflags))
          (display (format #f "Linking ~a ~%" command))
-         (apply system* command))
+         (apply system* command)))
                       
 
 ;; add check to see if there is one source
@@ -126,11 +130,11 @@
 ;; TODO check if obj directory exists and is writable
 
 (define (gbuild-main args)
-  (define dir (getcwd))
-  (define cbuild "build.scm")
-  (define files 
-    (scandir dir (lambda (filename) 
-                   (string=? cbuild filename))))
-  (if (null? files)
-    (error "build.scm not present")
-    (primitive-load (string-append dir "/" cbuild))))
+  (let* ((dir (getcwd))
+         (build-scm (string-append dir
+                                 "/"
+                                 "build.scm")))
+    (if (path-exists? build-scm)
+      (primitive-load build-scm)
+      (gbuild-error-no-build-script))))
+
